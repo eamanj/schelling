@@ -4,7 +4,7 @@ import random
 import copy
 import scipy.stats as stat
 
-
+#Hi
 class Schelling:
 	def __init__(self, width, height, empty_ratio, similarity_threshold, n_iterations, races = 2):
 		self.width = width 
