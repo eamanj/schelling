@@ -1,0 +1,2 @@
+# schelling
+Modified schelling model
