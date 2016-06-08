@@ -4,18 +4,28 @@ import random
 import copy
 import scipy.stats as stat
 
-#Hi
+
 class Schelling:
-	def __init__(self, width, height, empty_ratio, similarity_threshold, n_iterations, races = 2):
+	def __init__(self, width, height, empty_ratio, tolerance_distribution, alpha, mean, std, n_iterations, races = 2):
 		self.width = width 
 		self.height = height 
 		self.races = races
 		self.empty_ratio = empty_ratio
         #self.similarity_threshold = similarity_threshold
-		#self.tolerance_distribution = 
+		self.tolerance_distribution = tolerance_distribution
 		self.n_iterations = n_iterations
 		self.empty_houses = []
 		self.agents = {}
+		self.alpha = alpha
+		self.mean = mean
+		self.std = std
+	
+	def sample(self, tolerance_distribution, alpha, mean, std):
+		if tolerance_distribution == 'Gaussian':
+			return stat.norm.rvs(loc=mean,scale=std)
+			
+		elif tolerance_distribution == 'Powerlaw':
+			return stat.powerlaw.rvs(alpha)
 
 	def populate(self):
 		self.all_houses = list(itertools.product(range(self.width),range(self.height)))
@@ -29,7 +39,7 @@ class Schelling:
 		
 		for race_house in range(len(houses_by_race)):
 			for address in houses_by_race[race_house]:
-				self.agents[address] = [race_house + 1,stat.norm.rvs(loc=.8,scale=0.1)] # Second parameter is tolerance sampled from Gaussian
+				self.agents[address] = [race_house + 1, self.sample(self.tolerance_distribution, self.alpha, self.mean, self.std)] # Second parameter is tolerance sampled from Gaussian
 						
 	def is_unsatisfied(self, x, y):
 		race = self.agents[(x,y)][0]
@@ -174,12 +184,47 @@ class Schelling:
 			except:
 				similarity.append(1)
 		return sum(similarity)/len(similarity)
-		
-schelling = Schelling(30, 30, 0.1, 0.1, 500, 2)
-schelling.populate()
-schelling.plot('First plot','a')
-plt.show()
-schelling.update()
-print 'segregation index: ' + str(schelling_1.calculate_similarity())
-schelling.plot('Last plot', 'a')
-plt.show()
+
+
+# schelling_1 = Schelling(30, 30, 0.1, 'Powerlaw', 0.1, 500, 2)
+# schelling_1.populate()
+# schelling_1.plot('First plot','a')
+# plt.show()
+# schelling_1.update()
+# print str(schelling_1.calculate_similarity())
+# schelling_1.plot('Last plot', 'a')
+# plt.show()
+
+schelling_1 = Schelling(30, 30, 0.1, 'Powerlaw', .4, .5, .1, 500, 2)
+schelling_2 = Schelling(30, 30, 0.1, 'Powerlaw', .6, .5, .1, 500, 2)
+schelling_3 = Schelling(30, 30, 0.1, 'Powerlaw', .8, .5, .1, 500, 2)
+schelling_4 = Schelling(30, 30, 0.1, 'Powerlaw', 1.0, .5, .1, 500, 2)
+schelling_5 = Schelling(30, 30, 0.1, 'Powerlaw', 1.2, .5, .1, 500, 2)
+schelling_6 = Schelling(30, 30, 0.1, 'Powerlaw', 1.4, .5, .1, 500, 2)
+schelling_7 = Schelling(30, 30, 0.1, 'Powerlaw', 1.6, .5, .1, 500, 2)
+
+schelling_1.populate()
+schelling_2.populate()
+schelling_3.populate()
+schelling_4.populate()
+schelling_5.populate()
+schelling_6.populate()
+schelling_7.populate()
+
+schelling_1.update()
+schelling_2.update()
+schelling_3.update()
+schelling_4.update()
+schelling_5.update()
+schelling_6.update()
+schelling_7.update()
+
+print str(schelling_1.calculate_similarity())
+print str(schelling_2.calculate_similarity())
+print str(schelling_3.calculate_similarity())
+print str(schelling_4.calculate_similarity())
+print str(schelling_5.calculate_similarity())
+print str(schelling_6.calculate_similarity())
+print str(schelling_7.calculate_similarity())
+
+
