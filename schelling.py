@@ -1,4 +1,4 @@
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import itertools
 import sys
 import random
@@ -20,7 +20,7 @@ parser.add_argument("-m", "--mean", dest="mean", default=0.4, type=float,
                     help="The mean of guassian distribution")
 parser.add_argument("-st", "--std", dest="std", default=0.1, type=float,
                     help="The std of guassian distribution")
-parser.add_argument("-i", "--max_iterations", dest="max_iters", default=600, type=float,
+parser.add_argument("-i", "--max_iterations", dest="max_iters", default=600, type=int,
                     help="max number of iterations")
 parser.add_argument("-r", "--num_races", dest="num_races", default=2,
                     help="number of races")
