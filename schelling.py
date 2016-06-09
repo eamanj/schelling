@@ -1,4 +1,4 @@
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import itertools
 import sys
 import random
@@ -24,23 +24,29 @@ parser.add_argument("-i", "--max_iterations", dest="max_iters", default=600, typ
                     help="max number of iterations")
 parser.add_argument("-r", "--num_races", dest="num_races", default=2,
                     help="number of races")
+parser.add_argument("-u", "--update_rate", dest="update_rate", default=None, type=float,
+                    help="Determines the update rate of tolerances. The default value is "
+                    "None which indicates no updating (fixed tolerances). Should be a "
+                    "float with between 0 and 1.") 
 args = parser.parse_args()
 
 
 class Schelling:
-  def __init__(self, width, height, empty_ratio, tolerance_distribution, alpha, mean, std, n_iterations, races = 2):
+  def __init__(self, width, height, empty_ratio, tolerance_distribution, alpha, mean, std,
+               n_iterations, update_rate, races):
     self.width = width 
     self.height = height 
     self.races = races
     self.empty_ratio = empty_ratio
-        #self.similarity_threshold = similarity_threshold
     self.tolerance_distribution = tolerance_distribution
     self.n_iterations = n_iterations
     self.empty_houses = []
+    # agents is a dict from tuple (x_coord, y_coord) to list [race, tolerance]
     self.agents = {}
     self.alpha = alpha
     self.mean = mean
     self.std = std
+    self.update_rate = update_rate
 
   def sample(self, tolerance_distribution, alpha, mean, std):
     if tolerance_distribution == 'Gaussian':
@@ -65,9 +71,10 @@ class Schelling:
         tolerance = self.sample(self.tolerance_distribution, self.alpha, self.mean, self.std)
         self.agents[address] = [race_house + 1, tolerance]
 
-  def is_unsatisfied(self, x, y):
+  def count_similar_different_neighbors(self, agent_loc):
+    x = agent_loc[0]
+    y = agent_loc[1]
     race = self.agents[(x,y)][0]
-    tolerance = self.agents[(x,y)][1]
     count_similar = 0
     count_different = 0
 
@@ -112,23 +119,48 @@ class Schelling:
       else:
         count_different += 1
 
+    return (count_similar, count_different)
+
+  def is_unsatisfied(self, agent_loc):
+    tolerance = self.agents[agent_loc][1]
+    # agent_loc is a list of form [x,y] corresponding to coordinates of the agent on the grid
+    (count_similar, count_different) = self.count_similar_different_neighbors(agent_loc)
     if (count_similar+count_different) == 0:
       return False
     else:
       return float(count_different)/(count_similar + count_different) > tolerance
+  
+  def update_agent_tolerance(self, agent_loc):
+    old_tolerance = self.agents[agent_loc][1]
+    # should we update preferences?
+    if not self.update_rate:
+      return old_tolerance
+    if self.update_rate > 1 or self.update_rate < 0:
+      sys.exit('Bad update rate ' + self.update_rate)
+    (count_similar, count_different) = self.count_similar_different_neighbors(agent_loc)
+    if (count_similar+count_different) == 0:
+      return old_tolerance
+    different_neighbors_fraction = float(count_different)/(count_similar + count_different)
+    new_tolerance = (1 - self.update_rate) * old_tolerance + self.update_rate * different_neighbors_fraction
+    return new_tolerance
 
   def update(self):        
     for i in range(self.n_iterations):
       self.old_agents = copy.deepcopy(self.agents)
       n_changes = 0
-      for agent in self.old_agents:
-        if self.is_unsatisfied(agent[0], agent[1]):
-          agent_race = self.agents[agent]
+      for agent_loc in self.old_agents:
+        # compute new tolerance BEFORE MOVING, BUT UPDATE after moving. persumably, the
+        # effect of interaction with neighbors shows up in the future, not in the current
+        # time step
+        new_agent_tolerance = self.update_agent_tolerance(agent_loc)
+        if self.is_unsatisfied(agent_loc):
+          agent_race = self.agents[agent_loc][0]
           empty_house = random.choice(self.empty_houses)
-          self.agents[empty_house] = agent_race
-          del self.agents[agent]
+          # use new tolerance in new location
+          self.agents[empty_house] = [agent_race, new_agent_tolerance]
+          del self.agents[agent_loc]
           self.empty_houses.remove(empty_house)
-          self.empty_houses.append(agent)
+          self.empty_houses.append(agent_loc)
           n_changes += 1
       if n_changes == 0:
         return
@@ -216,7 +248,7 @@ class Schelling:
 def main():
   schelling = Schelling(args.size, args.size, args.empty_ratio,
       args.distribution, args.alpha, args.mean, args.std, args.max_iters,
-      args.num_races)
+      args.update_rate, args.num_races)
   schelling.populate()
   schelling.update()
   print 'Segregation index is ' + str(schelling.calculate_similarity())
