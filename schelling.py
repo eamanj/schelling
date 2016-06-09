@@ -1,4 +1,4 @@
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import itertools
 import sys
 import random
@@ -62,7 +62,8 @@ class Schelling:
 
     for race_house in range(len(houses_by_race)):
       for address in houses_by_race[race_house]:
-        self.agents[address] = [race_house + 1, self.sample(self.tolerance_distribution, self.alpha, self.mean, self.std)] # Second parameter is tolerance sampled from Gaussian
+        tolerance = self.sample(self.tolerance_distribution, self.alpha, self.mean, self.std)
+        self.agents[address] = [race_house + 1, tolerance]
 
   def is_unsatisfied(self, x, y):
     race = self.agents[(x,y)][0]
@@ -114,7 +115,7 @@ class Schelling:
     if (count_similar+count_different) == 0:
       return False
     else:
-      return float(count_different)/(count_similar + count_different) > tolerance #self.similarity_threshold
+      return float(count_different)/(count_similar + count_different) > tolerance
 
   def update(self):        
     for i in range(self.n_iterations):
@@ -129,9 +130,12 @@ class Schelling:
           self.empty_houses.remove(empty_house)
           self.empty_houses.append(agent)
           n_changes += 1
-      #print n_changes
       if n_changes == 0:
-        break
+        return
+    # Out of the loop. it did not converge!
+    print 'ERROR: grid did not converge in {} iterations'.format(self.n_iterations)
+    print 'ERROR: increase either max number of iterations or mean tolerance of population'
+
 
   def move_to_empty(self, x, y):
     race = self.agents[(x,y)]
@@ -141,7 +145,7 @@ class Schelling:
     self.empty_houses.remove(empty_house)
     self.empty_houses.append((x, y))
 
-  def plot(self, title, file_name):
+  def plot(self, title):
     fig, ax = plt.subplots()
     #If you want to run the simulation with more than 7 colors, you should set agent_colors accordingly
     agent_colors = {1:'b', 2:'r', 3:'g', 4:'c', 5:'m', 6:'y', 7:'k'}
@@ -210,21 +214,14 @@ class Schelling:
 
 
 def main():
-  #fig, ax = plt.subplots()
-  #plt.plot(sizes, similarity_threshold_ratio, 'ro')
-  #ax.set_title('Size vs. Mean Similarity Ratio', fontsize=15, fontweight='bold')
-  #ax.set_xlim([min(sizes), max(sizes)])
-  #ax.set_ylim([0, 1.1])
-  #ax.set_xlabel("Size")
-  #ax.set_ylabel("Mean Similarity Ratio")
-  #plt.savefig('schelling_segregation_size.png')
-
   schelling = Schelling(args.size, args.size, args.empty_ratio,
       args.distribution, args.alpha, args.mean, args.std, args.max_iters,
       args.num_races)
   schelling.populate()
   schelling.update()
   print 'Segregation index is ' + str(schelling.calculate_similarity())
+  #schelling.plot('Grid')
+  #plt.show()
 
 
 if __name__ == "__main__":
