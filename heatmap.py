@@ -26,7 +26,7 @@ args = parser.parse_args()
 def main():
   alpha = 0
   distribution = "Gaussian"
-  means = np.arange(0.1, 1, 0.05)
+  means = np.arange(0, 1, 0.05)
   update_rates = np.arange(0, 1, 0.05)
   results = np.zeros((len(means) * len(update_rates),3))
   idx = 0
@@ -58,7 +58,6 @@ def main():
   sns.heatmap(ax = ax, data = data, center=0.75)
   ax.set_title('Grid size = {} * {}, Empty ratio = {}, Normal Distribution with fixed '
                'std = {}'.format(args.size, args.size, args.empty_ratio, args.std))
-  sns.plt.show()
   fig.savefig(args.output_file)
 
 if __name__ == "__main__":
