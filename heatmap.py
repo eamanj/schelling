@@ -4,10 +4,11 @@ import schelling
 import numpy as np
 import pandas as pd
 import seaborn as sns
-import matploltib.pyplot as plt
+import matplotlib.pyplot as plt
 
 
 parser = argparse.ArgumentParser(description="")
+parser.add_argument("output_file", help="The location of output heatmap pdf")
 parser.add_argument("-s" , "--size", dest="size", default=30, type=int,
                     help="size of the grid.")
 parser.add_argument("-e" , "--empty_ratio", dest="empty_ratio", default=0.3, type=float,
@@ -27,8 +28,6 @@ def main():
   distribution = "Gaussian"
   means = np.arange(0.1, 1, 0.05)
   update_rates = np.arange(0, 1, 0.05)
-  means = np.arange(0.1, 1, 0.5)
-  update_rates = np.arange(0, 1, 0.5)
   results = np.zeros((len(means) * len(update_rates),3))
   idx = 0
   for mean in means:
@@ -57,7 +56,7 @@ def main():
   fig, ax = plt.subplots(figsize=(12,12))
   sns.heatmap(ax = ax, data = data)
   sns.plt.show()
-  fig.savefig('heatmap.png')
+  fig.savefig(args.output_file)
 
 if __name__ == "__main__":
   main()
