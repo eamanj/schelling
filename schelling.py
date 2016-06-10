@@ -3,6 +3,7 @@ import sys
 import random
 import copy
 import scipy.stats as stat
+import matplotlib.pyplot as plt
 
 class Schelling:
   def __init__(self, width, height, empty_ratio, tolerance_distribution, alpha, mean, std,
@@ -150,7 +151,7 @@ class Schelling:
     self.empty_houses.remove(empty_house)
     self.empty_houses.append((x, y))
 
-  def plot(self, title):
+  def plot(self, title, filename):
     fig, ax = plt.subplots()
     #If you want to run the simulation with more than 7 colors, you should set agent_colors accordingly
     agent_colors = {1:'b', 2:'r', 3:'g', 4:'c', 5:'m', 6:'y', 7:'k'}
@@ -161,7 +162,7 @@ class Schelling:
     ax.set_ylim([0, self.height])
     ax.set_xticks([])
     ax.set_yticks([])
-    #plt.savefig(file_name)
+    plt.savefig(filename)
 
   def calculate_similarity(self):
     similarity = []

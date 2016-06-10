@@ -1,8 +1,9 @@
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import argparse
 import schelling
 
 parser = argparse.ArgumentParser(description="")
+parser.add_argument("output_file", help="The location of output heatmap pdf")
 parser.add_argument("-s" , "--size", dest="size", default=30, type=int,
                     help="size of the grid.")
 parser.add_argument("-e" , "--empty_ratio", dest="empty_ratio", default=0.3, type=float,
@@ -33,8 +34,7 @@ def main():
   model.populate()
   model.update()
   print 'Segregation index is ' + str(model.calculate_similarity())
-  #model.plot('Grid')
-  #plt.show()
+  model.plot('Grid', args.output_file)
 
 
 if __name__ == "__main__":
