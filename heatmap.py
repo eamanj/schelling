@@ -54,7 +54,10 @@ def main():
   data = data.pivot(index='Mean Tolerance',
                     columns='Learning Rate', values='Segregation Index')
   fig, ax = plt.subplots(figsize=(12,12))
-  sns.heatmap(ax = ax, data = data)
+  # center color map at half way between 0.5 and 1
+  sns.heatmap(ax = ax, data = data, center=0.75)
+  ax.set_title('Grid size = {} * {}, Empty ratio = {}, Normal Distribution with fixed '
+               'std = {}'.format(args.size, args.size, args.empty_ratio, args.std))
   sns.plt.show()
   fig.savefig(args.output_file)
 
